@@ -1,0 +1,10 @@
+pandas
+matplotlib
+gensim
+networkx
+nltk
+node2vec
+scikit-learn
+torch-geometric
+transformers
+wandb
