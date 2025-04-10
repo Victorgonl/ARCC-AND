@@ -10,7 +10,7 @@ import datetime
 import pandas as pd
 import numpy as np
 import codecs
-import wandb
+""" import wandb """
 from torch.utils.data import DataLoader
 
 # Solving the problem of not being able to import your own packages under linux
@@ -384,7 +384,7 @@ def train():
             train_recs_perbs.append(recall)
             train_f1s_perbs.append(f1)
 
-            wandb.log(
+            """ wandb.log(
                 {
                     "train/step_acc": acc_t,
                     "train/step_loss": loss.item(),
@@ -393,7 +393,7 @@ def train():
                     "train/step_f1": f1,
                     "train/step": train_step,
                 }
-            )
+            ) """
 
             # 打印指标日志
             end2 = datetime.datetime.now()
@@ -432,7 +432,7 @@ def train():
         train_recs_perepoch.append(np.mean(train_recs_perbs))
         train_f1s_perepoch.append(np.mean(train_f1s_perbs))
 
-        wandb.log(
+        """ wandb.log(
             {
                 "train/epoch_avg_acc": np.mean(train_acc_tmp),
                 "train/epoch_avg_loss": np.mean(train_loss_tmp),
@@ -441,7 +441,7 @@ def train():
                 "train/epoch_avg_f1": np.mean(train_f1s_perbs),
                 "epochs": ep,
             }
-        )
+        ) """
 
         print("##########{}/{}: Eval Model#############".format(ep, epochs))
         print("##########{}/{}: Eval Model#############".format(ep, epochs), file=log)
@@ -521,7 +521,7 @@ def train():
                 test_recs_perepoch.append(recall)
                 test_f1s_perepoch.append(f1)
 
-                wandb.log(
+                """ wandb.log(
                     {
                         "valid/step_acc": acc_t,
                         "valid/step_loss": loss.item(),
@@ -530,7 +530,7 @@ def train():
                         "valid/step_f1": f1,
                         "valid/step": valid_step,
                     }
-                )
+                ) """
             # 计算平均loss, 总loss / 总数据个数
             te_loss = sum(losses) / counter
             # 记录该批次的evel数据集的loss
@@ -548,7 +548,7 @@ def train():
                 # todo 添加参数
                 best_modelPath = "{}/{}.pkt".format(save_bestmodels, save_file_name)
                 torch.save(model, best_modelPath)
-            wandb.log(
+            """ wandb.log(
                 {
                     "valid/epoch_avg_acc": te_acc,
                     "valid/epoch_avg_loss": te_loss,
@@ -558,7 +558,7 @@ def train():
                     "epochs": ep,
                     "valid/epoch_valid_best_f1": best_f1,
                 }
-            )
+            ) """
             # 打印eval的指标日志
             print(
                 "Eval ==> Epoch: {}/{}, EvalLoss: {:.4f}, EvalAccuracy: {}".format(
@@ -713,7 +713,7 @@ def model_test(res_file_path):
         sigmoid_score1[1] += recall
         sigmoid_score1[2] += f1
 
-        wandb.log(
+        """ wandb.log(
             {
                 "test/step_acc": train_metrics_t,
                 "test/step_pre": precision,
@@ -721,7 +721,7 @@ def model_test(res_file_path):
                 "test/step_f1": f1,
                 "test/index": index,
             }
-        )
+        ) """
         file_word2vec_local1.write(
             "%s\t %s\t %4.2f%%\t %4.2f%%\t %4.2f%%\n"
             % (index, name, precision * 100, recall * 100, f1 * 100)
@@ -734,14 +734,14 @@ def model_test(res_file_path):
     sigmoid_score1[1] /= cnt
     sigmoid_score1[2] /= cnt
 
-    wandb.log(
+    """ wandb.log(
         {
             "test/avg_acc": np.mean(train_acc_tmp),
             "test/avg_pre": sigmoid_score1[0],
             "test/avg_recall": sigmoid_score1[1],
             "test/avg_f1": sigmoid_score1[2],
         }
-    )
+    ) """
     file_word2vec_local1.write(
         "0\t average\t %4.2f%%\t %4.2f%%\t %4.2f%%\n"
         % (sigmoid_score1[0] * 100, sigmoid_score1[1] * 100, sigmoid_score1[2] * 100)
@@ -761,11 +761,11 @@ def model_test(res_file_path):
 
 if __name__ == "__main__":
     # step1: wandb init
-    wandb.init(
+    """ wandb.init(
         project="WWW24",
         name="Aminer18" + "_" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         config=config,
-    )
+    ) """
 
     # step2: mkdir output file
     mkdir(save_base_folder)
@@ -779,4 +779,4 @@ if __name__ == "__main__":
     res_file_path = train()
     test_res_file_path = model_test(res_file_path)
     draw_acc_loss_curve(test_res_file_path, save_test_result)
-    wandb.finish()
+    """ wandb.finish() """
