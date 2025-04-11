@@ -52,29 +52,18 @@ def save_embeddings(
         append (bool): If True, append to file; otherwise, create new
         is_complete (bool): Whether the output is complete or not
     """
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
     s_emb_np = s_emb.detach().cpu().numpy()
     r_emb_np = r_emb.detach().cpu().numpy()
     pred_np = prediction.detach().cpu().numpy()
     label_np = label.detach().cpu().numpy()
 
-    # Modify path if incomplete
     base_path, ext = os.path.splitext(save_path)
-    if not is_complete:
-        save_path = f"{base_path}_incomplete{ext}"
-    else:
-        # Try removing the incomplete version
-        incomplete_path = f"{base_path}_incomplete{ext}"
-        if os.path.exists(incomplete_path):
-            try:
-                os.remove(incomplete_path)
-                print(f"🗑️ Removed incomplete file: {incomplete_path}")
-            except Exception as e:
-                pass
-                # print(f"⚠️ Could not remove incomplete file: {e}")
+    incomplete_path = f"{base_path}_incomplete{ext}"
 
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
     mode = "a" if append else "w"
-    with open(save_path, mode, encoding="utf-8") as f:
+    with open(incomplete_path, mode, encoding="utf-8") as f:
         for i in range(len(label_np)):
             row = {
                 "paper_id": paper_ids[i],
@@ -85,14 +74,18 @@ def save_embeddings(
             }
             f.write(json.dumps(row) + "\n")
 
-    if not append:
-        print(f"✅ Saved embeddings to {save_path}")
-    if is_complete:
+    if is_complete and os.path.exists(incomplete_path):
+        shutil.move(incomplete_path, save_path)
         print(f"✅ Saved complete embeddings to {save_path}")
-    # print(f"✅ {'Appended' if append else 'Saved'} embeddings to {save_path}")
+        return
+
+    if not append:
+        print(
+            f"💾 {'Create' if not append else 'Update'} incomplete embeddings in {save_path}"
+        )
 
 
-def mark_as_best(file_path: str):
+def mark_file(file_path: str, mark="best"):
     """
     Create a copy of the given file with '_best' added before the extension.
     If such a file already exists, it will be replaced.
@@ -105,13 +98,13 @@ def mark_as_best(file_path: str):
         return
 
     base, ext = os.path.splitext(file_path)
-    best_path = f"{base}_best{ext}"
+    mark_path = f"{base}_{mark}{ext}"
 
     try:
-        shutil.copyfile(file_path, best_path)
-        print(f"🏆 Saved best version as: {best_path}")
+        shutil.move(file_path, mark_path)
+        print(f"🏆 Saved {mark} version as: {mark_path}")
     except Exception as e:
-        print(f"⚠️ Failed to save best version: {e}")
+        print(f"⚠️ Failed to save {mark} version: {e}")
 
 
 def load_embeddings(save_path: str, max_lines: int = None):
@@ -365,7 +358,7 @@ def train():
             )
 
             # Save embeddings
-            if ep == epochs - 1 or ep % 5 == 0:
+            if ep == epochs - 1 or ep % 10 == 0:
                 paper_ids = [pid[0] for pid in sample_list[0]]
                 save_embeddings(
                     paper_ids=paper_ids,
@@ -441,7 +434,7 @@ def train():
 
             # 打印指标日志
             end2 = datetime.datetime.now()
-            if iter % 100 == 0:
+            if iter % 10 == 0:
                 print(
                     "Epoch: {}/{}, Iteration: {}/{}, Lr: {}, Loss: {:.4f}, Accuracy: {},Usingtime:{}".format(
                         ep + 1,
@@ -523,7 +516,7 @@ def train():
                 )
 
                 # Save embeddings
-                if ep == epochs - 1 or ep % 5 == 0:
+                if ep == epochs - 1 or ep % 10 == 0:
                     paper_ids = [pid[0] for pid in sample_list[0]]
                     save_embeddings(
                         paper_ids=paper_ids,
@@ -607,8 +600,12 @@ def train():
                 best_modelPath = "{}/{}.pkt".format(save_bestmodels, save_file_name)
                 torch.save(model, best_modelPath)
 
-                mark_as_best(file_path="./embeddings/Aminer-18/aminer18_embeddings_train.jsonl")
-                mark_as_best(file_path="./embeddings/Aminer-18/aminer18_embeddings_validation.jsonl")
+                mark_as_best(
+                    file_path="./embeddings/Aminer-18/aminer18_embeddings_train.jsonl"
+                )
+                mark_as_best(
+                    file_path="./embeddings/Aminer-18/aminer18_embeddings_validation.jsonl"
+                )
 
             """ wandb.log(
                 {
@@ -839,6 +836,6 @@ if __name__ == "__main__":
 
     # step4: train and test and draw_pic
     res_file_path = train()
-    #test_res_file_path = model_test(res_file_path)
-    #draw_acc_loss_curve(test_res_file_path, save_test_result)
+    # test_res_file_path = model_test(res_file_path)
+    # draw_acc_loss_curve(test_res_file_path, save_test_result)
     """ wandb.finish() """
