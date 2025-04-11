@@ -600,10 +600,10 @@ def train():
                 best_modelPath = "{}/{}.pkt".format(save_bestmodels, save_file_name)
                 torch.save(model, best_modelPath)
 
-                mark_as_best(
+                mark_file(
                     file_path="./embeddings/Aminer-18/aminer18_embeddings_train.jsonl"
                 )
-                mark_as_best(
+                mark_file(
                     file_path="./embeddings/Aminer-18/aminer18_embeddings_validation.jsonl"
                 )
 
