@@ -422,7 +422,7 @@ def train():
 
             # 打印指标日志
             end2 = datetime.datetime.now()
-            if iter % 10 == 0:
+            if iter == len(training_generator) - 1:
                 print(
                     "Epoch: {}/{}, Iteration: {}/{}, Lr: {}, Loss: {:.4f}, Accuracy: {},Usingtime:{}".format(
                         ep + 1,
