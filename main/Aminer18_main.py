@@ -839,6 +839,6 @@ if __name__ == "__main__":
 
     # step4: train and test and draw_pic
     res_file_path = train()
-    test_res_file_path = model_test(res_file_path)
-    draw_acc_loss_curve(test_res_file_path, save_test_result)
+    #test_res_file_path = model_test(res_file_path)
+    #draw_acc_loss_curve(test_res_file_path, save_test_result)
     """ wandb.finish() """
