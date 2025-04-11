@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import warnings
+import shutil
 from typing import List
 
 import torch
@@ -89,6 +90,28 @@ def save_embeddings(
     if is_complete:
         print(f"✅ Saved complete embeddings to {save_path}")
     # print(f"✅ {'Appended' if append else 'Saved'} embeddings to {save_path}")
+
+
+def mark_as_best(file_path: str):
+    """
+    Create a copy of the given file with '_best' added before the extension.
+    If such a file already exists, it will be replaced.
+
+    Args:
+        file_path (str): Path to the original file
+    """
+    if not os.path.exists(file_path):
+        print(f"❌ File not found: {file_path}")
+        return
+
+    base, ext = os.path.splitext(file_path)
+    best_path = f"{base}_best{ext}"
+
+    try:
+        shutil.copyfile(file_path, best_path)
+        print(f"🏆 Saved best version as: {best_path}")
+    except Exception as e:
+        print(f"⚠️ Failed to save best version: {e}")
 
 
 def load_embeddings(save_path: str, max_lines: int = None):
@@ -352,7 +375,7 @@ def train():
                     label=label,
                     save_path="./embeddings/Aminer-18/aminer18_embeddings_train.jsonl",
                     append=iter != 0,
-                    is_complete=iter == len(training_generator) - 1
+                    is_complete=iter == len(training_generator) - 1,
                 )
 
             # 根据pre与label值的距离，计算loss，loss是标量
@@ -499,6 +522,20 @@ def train():
                     adj_matrix_tensor=adj_matrix_tensor,
                 )
 
+                # Save embeddings
+                if ep == epochs - 1 or ep % 5 == 0:
+                    paper_ids = [pid[0] for pid in sample_list[0]]
+                    save_embeddings(
+                        paper_ids=paper_ids,
+                        s_emb=s_emb,
+                        r_emb=r_emb,
+                        prediction=prediction,
+                        label=label,
+                        save_path="./embeddings/Aminer-18/aminer18_embeddings_validation.jsonl",
+                        append=iter != 0,
+                        is_complete=iter == len(valid_generator) - 1,
+                    )
+
                 loss1 = criterion_content(s_emb, label)
                 loss2 = criterion_structure(r_emb, label)
                 loss3 = criterion_fusion(prediction, label)
@@ -569,6 +606,10 @@ def train():
                 # todo 添加参数
                 best_modelPath = "{}/{}.pkt".format(save_bestmodels, save_file_name)
                 torch.save(model, best_modelPath)
+
+                mark_as_best(file_path="./embeddings/Aminer-18/aminer18_embeddings_train.jsonl")
+                mark_as_best(file_path="./embeddings/Aminer-18/aminer18_embeddings_validation.jsonl")
+
             """ wandb.log(
                 {
                     "valid/epoch_avg_acc": te_acc,
