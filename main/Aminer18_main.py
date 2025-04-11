@@ -567,12 +567,13 @@ def train():
                 best_modelPath = "{}/{}.pkt".format(save_bestmodels, save_file_name)
                 torch.save(model, best_modelPath)
 
-                mark_file(
-                    file_path="./embeddings/Aminer-18/aminer18_embeddings_train.jsonl"
-                )
-                mark_file(
-                    file_path="./embeddings/Aminer-18/aminer18_embeddings_validation.jsonl"
-                )
+                if ep == epochs - 1 or ep % 10 == 0:
+                    mark_file(
+                        file_path="./embeddings/Aminer-18/aminer18_embeddings_train.jsonl"
+                    )
+                    mark_file(
+                        file_path="./embeddings/Aminer-18/aminer18_embeddings_validation.jsonl"
+                    )
 
             # 打印eval的指标日志
             print(
