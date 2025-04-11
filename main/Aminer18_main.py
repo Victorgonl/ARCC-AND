@@ -86,6 +86,8 @@ def save_embeddings(
 
     if not append:
         print(f"✅ Saved embeddings to {save_path}")
+    if is_complete:
+        print(f"✅ Saved complete embeddings to {save_path}")
     # print(f"✅ {'Appended' if append else 'Saved'} embeddings to {save_path}")
 
 
