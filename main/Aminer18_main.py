@@ -322,7 +322,7 @@ def train():
             )
 
             # Save embeddings
-            if ep == epochs - 1:
+            if ep == epochs - 1 or ep % 5 == 0:
                 paper_ids = [pid[0] for pid in sample_list[0]]
                 save_embeddings(
                     paper_ids=paper_ids,
