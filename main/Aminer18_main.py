@@ -10,6 +10,7 @@ import datetime
 import pandas as pd
 import numpy as np
 import codecs
+
 """ import wandb """
 from torch.utils.data import DataLoader
 
@@ -35,6 +36,7 @@ def save_embeddings(
     label: torch.Tensor,
     save_path: str,
     append: bool = False,
+    is_complete: bool = True,
 ):
     """
     Save semantic, structural, fused embeddings and labels into a JSONL file.
@@ -47,15 +49,29 @@ def save_embeddings(
         label (Tensor): Ground truth labels, shape [N]
         save_path (str): Path to JSONL file
         append (bool): If True, append to file; otherwise, create new
+        is_complete (bool): Whether the output is complete or not
     """
     s_emb_np = s_emb.detach().cpu().numpy()
     r_emb_np = r_emb.detach().cpu().numpy()
     pred_np = prediction.detach().cpu().numpy()
     label_np = label.detach().cpu().numpy()
 
-    dir_path = os.path.dirname(save_path)
-    os.makedirs(dir_path, exist_ok=True)
+    # Modify path if incomplete
+    base_path, ext = os.path.splitext(save_path)
+    if not is_complete:
+        save_path = f"{base_path}_incomplete{ext}"
+    else:
+        # Try removing the incomplete version
+        incomplete_path = f"{base_path}_incomplete{ext}"
+        if os.path.exists(incomplete_path):
+            try:
+                os.remove(incomplete_path)
+                print(f"🗑️ Removed incomplete file: {incomplete_path}")
+            except Exception as e:
+                pass
+                # print(f"⚠️ Could not remove incomplete file: {e}")
 
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
     mode = "a" if append else "w"
     with open(save_path, mode, encoding="utf-8") as f:
         for i in range(len(label_np)):
@@ -68,7 +84,9 @@ def save_embeddings(
             }
             f.write(json.dumps(row) + "\n")
 
-    print(f"✅ {'Appended' if append else 'Saved'} embeddings to {save_path}")
+    if not append:
+        print(f"✅ Saved embeddings to {save_path}")
+    # print(f"✅ {'Appended' if append else 'Saved'} embeddings to {save_path}")
 
 
 def load_embeddings(save_path: str, max_lines: int = None):
@@ -332,6 +350,7 @@ def train():
                     label=label,
                     save_path="./embeddings/Aminer-18/aminer18_embeddings_train.jsonl",
                     append=iter != 0,
+                    is_complete=iter == len(training_generator) - 1
                 )
 
             # 根据pre与label值的距离，计算loss，loss是标量
@@ -761,11 +780,11 @@ def model_test(res_file_path):
 
 if __name__ == "__main__":
     # step1: wandb init
-    """ wandb.init(
+    """wandb.init(
         project="WWW24",
         name="Aminer18" + "_" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         config=config,
-    ) """
+    )"""
 
     # step2: mkdir output file
     mkdir(save_base_folder)
