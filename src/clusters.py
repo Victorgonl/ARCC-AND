@@ -1,12 +1,15 @@
 from sklearn.cluster import *
 
-def paperClusterByDis(dis, name_papers, n_cluster, method='AG',linkage='average'):
-    if method == 'AG':
-        cmodel = AgglomerativeClustering(n_clusters=n_cluster, linkage= linkage, affinity='precomputed')
-    elif method == 'AP':
-        cmodel = AffinityPropagation(damping=0.5, affinity='precomputed')
+
+def paperClusterByDis(dis, name_papers, n_cluster, method="AG", linkage="average"):
+    if method == "AG":
+        cmodel = AgglomerativeClustering(
+            n_clusters=n_cluster, linkage=linkage, metric="precomputed"
+        )
+    elif method == "AP":
+        cmodel = AffinityPropagation(damping=0.5, metric="precomputed")
     else:
-        cmodel = DBSCAN(eps=0.25, min_samples=5, metric='precomputed')
+        cmodel = DBSCAN(eps=0.25, min_samples=5, metric="precomputed")
     indexs = cmodel.fit_predict(dis)
     result = []
 
@@ -20,7 +23,7 @@ def paperClusterByDis(dis, name_papers, n_cluster, method='AG',linkage='average'
             continue
 
         while value >= len(result):
-             result.append([])
+            result.append([])
 
         result[value].append(name_papers[i])
 
@@ -30,7 +33,5 @@ def paperClusterByDis(dis, name_papers, n_cluster, method='AG',linkage='average'
     return result
 
 
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
