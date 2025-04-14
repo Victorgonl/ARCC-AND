@@ -700,7 +700,7 @@ def model_test(res_file_path):
             r_emb=r_emb,
             prediction=prediction,
             label=label,
-            save_path="./embeddings/Aminer-18//aminer18_embeddings_test.jsonl",
+            save_path="./embeddings/Aminer-18/aminer18_embeddings_test.jsonl",
             append=index != 0,
         )
 
