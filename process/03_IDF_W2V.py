@@ -1,36 +1,40 @@
 import os
 import random
 import sys
+
 # Solving the problem of not being able to import your own packages under linux
-cur_path=os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, cur_path+"/..")
-from tqdm import tqdm
-from gensim.models import Word2Vec, Doc2Vec
+cur_path = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, cur_path + "/..")
 from collections import defaultdict
-from src.util_training import setup_seed
-from src.utils import parse_configion,parseJson,saveJson,extract_common_features
+
 import numpy as np
-
-
-
+from gensim.models import Doc2Vec, Word2Vec
+from src.util_training import setup_seed
+from src.utils import extract_common_features, parse_configion, parseJson, saveJson
+from tqdm import tqdm
 
 config = parse_configion()
-setup_seed(config['seed'])
+setup_seed(config["seed"])
 # Solve the problem of absolute and relative paths for different clients
 BasePath = os.path.abspath(os.path.dirname(__file__))
 # Current file name
-curFileName = os.path.basename(__file__).split('.')[0]
-idf_courpus_path = "{}/{}/idf_corpus.json".format(BasePath,config['processed_path'])
+curFileName = os.path.basename(__file__).split(".")[0]
+idf_courpus_path = "{}/{}/idf_corpus.json".format(BasePath, config["processed_path"])
 
-pubs_raw_path =  "{}/{}/{}".format(BasePath,config['raw_path'],config['raw_data'])
-wordIdf_path = "{}/{}/wordIdf.json".format(BasePath,config['processed_path'])
+pubs_raw_path = "{}/{}/{}".format(BasePath, config["raw_path"], config["raw_data"])
+wordIdf_path = "{}/{}/wordIdf.json".format(BasePath, config["processed_path"])
 
 # w2v semantic embedding
-w2v_model_path = "{}/{}/w2v_semantic.model".format(BasePath,config['pretrain_model_path'])
-semantic_emb_w2v = "{}/{}/{}".format(BasePath,config['processed_path'],config['semantic_emb_w2v'])
+w2v_model_path = "{}/{}/w2v_semantic.model".format(
+    BasePath, config["pretrain_model_path"]
+)
+semantic_emb_w2v = "{}/{}/{}".format(
+    BasePath, config["processed_path"], config["semantic_emb_w2v"]
+)
 
 
 paper_infos = parseJson(pubs_raw_path)
+
 
 def getAllPapersFeatures():
     # paper_feature_list = {}
@@ -48,13 +52,12 @@ def getAllPapersFeatures():
     # saveJson(paper_feature_path, paper_feature_list)
 
 
-
 def calWordIdf():
     cropus = parseJson(idf_courpus_path)
     idfMap = defaultdict(int)
     docNum = len(cropus)
 
-    for doc in tqdm(cropus, desc='cal word idf'):
+    for doc in tqdm(cropus, desc="cal word idf"):
         wordSet = set(doc)
         for word in wordSet:
             idfMap[word] += 1
@@ -63,8 +66,6 @@ def calWordIdf():
         idfMap[word] = np.log(docNum / idfMap[word])
 
     saveJson(wordIdf_path, idfMap)
-
-
 
 
 def trainWord2Vec(dim=100):
@@ -78,6 +79,7 @@ def trainWord2Vec(dim=100):
     model = Word2Vec(data, size=dim, window=5, min_count=5, workers=20)
     model.save(w2v_model_path)
 
+
 #
 def getAllPapersEmbedding():
     corpus = parseJson(idf_courpus_path)
@@ -86,7 +88,9 @@ def getAllPapersEmbedding():
 
     allPapersEmbeding = {}
 
-    for paperId, feature in tqdm(zip(paper_infos.keys(), corpus), desc="cal paper embedding"):
+    for paperId, feature in tqdm(
+        zip(paper_infos.keys(), corpus), desc="cal paper embedding"
+    ):
         vectors = []
         sumIdf = 0
 
@@ -99,17 +103,13 @@ def getAllPapersEmbedding():
             except:
                 pass
 
-        allPapersEmbeding[paperId] = (np.sum(vectors, axis=0)/sumIdf).tolist()
+        allPapersEmbeding[paperId] = (np.sum(vectors, axis=0) / sumIdf).tolist()
 
     saveJson(semantic_emb_w2v, allPapersEmbeding)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     getAllPapersFeatures()  # Extracting paper features to build a corpus
     calWordIdf()  # Calculate the inverse text frequency IDF of the word
     trainWord2Vec()
     getAllPapersEmbedding()
-
-
-
-

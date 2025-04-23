@@ -1,0 +1,12 @@
+.ignore
+
+*.mypy_cache*
+*__pycache__*
+*pyc
+
+wandb
+output
+other
+data
+
+*.pkl
