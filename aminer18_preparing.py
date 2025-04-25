@@ -5,10 +5,11 @@ import os
 import sys
 
 import pandas as pd
+from tqdm import tqdm
 
 
 def main(dataset_dir):
-    print("# Aminer-18 Dataset Processing\n")
+    print("# Aminer-18 Dataset Preparing\n")
 
     # Load raw publications
     with open(os.path.join(dataset_dir, "pubs_raw.json")) as f:
@@ -27,7 +28,7 @@ def main(dataset_dir):
         "paper_id": [],
     }
 
-    for name in train:
+    for name in tqdm(train, desc="Processing train authors"):
         for author_id in train[name]:
             for paper in train[name][author_id]:
                 paper_id, author_index = paper.split("-")
@@ -47,9 +48,10 @@ def main(dataset_dir):
 
     pubs_raw_train_500 = {
         paper_id: aminer18_raw[paper_id]
-        for paper_id in aminer18_raw
+        for paper_id in tqdm(aminer18_raw, desc="Filtering raw train papers")
         if paper_id in aminer18_train_map["paper_id"].values
     }
+
     json.dump(
         pubs_raw_train_500,
         open(os.path.join(dataset_dir, "pubs_raw_train_500.json"), "w"),
@@ -68,7 +70,7 @@ def main(dataset_dir):
         "paper_id": [],
     }
 
-    for name in test:
+    for name in tqdm(test, desc="Processing test authors"):
         for author_id in test[name]:
             for paper in test[name][author_id]:
                 paper_id, author_index = paper.split("-")
@@ -94,7 +96,7 @@ def main(dataset_dir):
 
     pubs_raw_test_100 = {
         paper_id: aminer18_raw[paper_id]
-        for paper_id in aminer18_raw
+        for paper_id in tqdm(aminer18_raw, desc="Filtering raw test papers")
         if paper_id in aminer18_test_map["paper_id"].values
     }
 
@@ -134,7 +136,7 @@ def main(dataset_dir):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: python aminer18_process.py <dataset_folder>")
+        print("Usage: python aminer18_preparing.py <dataset_folder>")
         sys.exit(1)
     dataset_dir = sys.argv[1]
     main(dataset_dir)
