@@ -5,7 +5,7 @@ processed_path: '../data/Aminer-18/processed'
 pretrain_model_path: '../data/Aminer-18/pretrain_model'
 
 # raw data
-raw_data: 'pubs_raw_train_500.json'
+raw_data: 'pubs_raw.json'
 
 #label data
 train_and_valid_raw_data: 'name_to_pubs_train_500.json'
@@ -58,7 +58,7 @@ acc_sim: 0.5
 hidden: 100
 dropout: 0.5
 batch_size: 1
-epochs: 1
+epochs: 150
 gcnLayer: 1
 temperature_content: 0.07
 temperature_structure: 0.07
@@ -72,4 +72,3 @@ metric_type: 'cosine'
 sem_freeze: 1
 rel_freeze: 0
 idf_threshold: 8
-
